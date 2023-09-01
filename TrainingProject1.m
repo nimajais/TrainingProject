@@ -5,11 +5,12 @@ function TrainingProject1
     y = trainingData(:, 2); 
     scatter(x, y) 
 
-b = uibutton(app.UIFigure); 
-b.ButtonPushedFcn = @app.mybuttonpress; 
+%b = uibutton(app.UIFigure); 
+%b.ButtonPushedFcn = @app.mybuttonpress; 
 end 
 
-function mybuttonpress(app, src, event)
-    myImage = imread(NeuronLinkedIn.jpeg);  
-    imshow(myImage); 
-end
+%function mybuttonpress(app, src, event)
+%    myImage = imread(NeuronLinkedIn.jpeg);  
+%   imshow(myImage); 
+%end
+%%%
