@@ -13,11 +13,13 @@ classdef TrainingProject < matlab.ui.componentcontainer.ComponentContainer
     methods (Access = private)
 
         % Button pushed function: ImageButton
+        % Displays an image when the button is pushed. 
         function ImageButtonPushed(comp, event)
             imshow('NeuronLinkedIn.jpeg', 'Parent', comp.UIAxes2);
         end
 
         % Button pushed function: ScatterplotButton
+        % Displays a scatterplot of sample data when the button is pushed. 
         function ScatterplotButtonPushed(comp, event)
             trainingData = readmatrix('Training Project CSV - Sheet1.csv'); 
             x = trainingData(:, 1);
