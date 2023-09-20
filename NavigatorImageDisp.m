@@ -25,5 +25,5 @@ function NavigatorImageDisp
     % Updates the navigator.  
     n.addChannel('Channel', monoChannel);
     n.CurrentObject = w;
-    %n.zoomFit('selected'); % Zooms onto plate with the image. 
+    n.zoomFit('selected'); % Zooms onto plate with the image. 
 
