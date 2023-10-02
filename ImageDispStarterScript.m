@@ -52,30 +52,29 @@ planner.addFOV('Well', currWell, ...
 n = navigator(); n.load(library); % load library to show
 %% Task for Arunima:
 
-%{
+
 %1. place the image to the FOV added to navigator
 
     % Creates a channel for a monochromatic image displaying in bue. 
-    monoChannel = spcore.ui.navigator.Channel('Name', 'Image', ..._ 
-        'Color', 'blue', ...
-        'CLim', [0 255], ...
-        'CRange', [0, 255]); 
-    
+      monoChannel = spcore.ui.navigator.Channel('Name', 'Image', ..._ 
+                                                'Color', 'blue', ...
+                                                'CLim', [0 (2e16)-1], ...
+                                                'CRange', [0, (2e16)-1]); 
     plateScale = [sign(0.5 - plate.XReverse), -sign(0.5 - plate.YReverse)];
     T = spcore.ui.navigator.Image.getTransformation(...
-    'Scale', plateScale .* [XPhysicalSize, YPhysicalSize], ...
-    'Translate', [XRelativePosition, YRelativePosition]);
+    'Scale', plateScale .* [1, 1], ...
+    'Translate', [FOVStageCoor.X FOVStageCoor.Y]);
 
     % Adds the custom image onto the plate
     mMono = monoChannel.addImage(...
-    'CData', imread('FOVImage'), ...
+    'CData', FOVImage, ...
     'Transformation', T);
 
     % Updates the navigator. 
     n.addChannel('Channel', monoChannel);
-    n.CurrentObject = w;
-    n.zoomFit('selected'); % Zooms onto plate with the image.
-
+    %n.CurrentObject = w;
+    %n.zoomFit('selected'); % Zooms onto plate with the image.
+%{ 
 2. from the data, this FOV has a stage coordinate (center of FOV) as in
 'FOVStageCoor'. Can you figure out which well does this FOV belong to? if
 so, can you generate the right well and FOV, and place the image there?
