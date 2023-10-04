@@ -14,7 +14,6 @@ title('Take a look the image of this FOV')
 [FOVPixelSizeY, FOVPixelSizeX] = size(FOVImage); 
 FOVPhysicalSizeX = FOVPixelSizeX* CalibrationInfo.Resolution/1000; % CalibrationInfo.Resolution is um/pixel, physical size is in mm as defined in plate
 FOVPhysicalSizeY = FOVPixelSizeY * CalibrationInfo.Resolution/1000;
-
 FOVStageCoor = FOVData.FOVStagePosition{iImage}; % CAUTION: this is in um
 
 %% Let make a 24well plate
@@ -36,8 +35,8 @@ planner = spcore.hardware.Planner(library);
 group = planner.addGroup();
 
 disp('Finished initialize protocol and plate');
-%% let make a well A2
-wellName = {'A2'};
+%% Create all of the wells in a 24 well plate. 
+wellName = {'D6'};
 planner.addWell('Group', 1, ...
     'Plate', plateID, ...
     'WellName', wellName);
@@ -48,12 +47,57 @@ planner.addFOV('Well', currWell, ...
     'XPhysicalSize', FOVPhysicalSizeX, ...
     'YPhysicalSize', FOVPhysicalSizeY);
 % FOV added to the center
-
 n = navigator(); n.load(library); % load library to show
+
+%{
+% Disregard this code, it is still under construction for task 2. 
+wellName = {'A1-D6'};
+planner.addWell('Group', 1, ...
+    'Plate', plateID, ...
+    'WellName', wellName);
+groupNames = ["Control", "Test"];
+wells = {[1, 1; 1, 2; 1, 3; 1, 4], [2, 1; 2, 2; 2, 3; 2, 4]};
+for i = 1:numel(groupNames)
+    g = spcore.Group('Name', groupNames(i), ...
+        'Parent', lib);
+    for j = 1:height(wells{i})
+        wellName = spcore.Plate.rc2wellname(wells{i}(j, 1), wells{i}(j, 2));
+        spcore.Well('Name', groupNames(i) + " Well " + string(j), ...
+            'Parent', g, ...
+            'Plate', plate, ...
+            'WellName', wellName);
+    end
+end
+%} 
 %% Task for Arunima:
 
 
 %1. place the image to the FOV added to navigator
+% Creates a channel for the monochromatic image to display in blue. 
+monoChannel = spcore.ui.navigator.Channel('Name', 'Image', ...
+    'Color', 'blue', ...
+    'CLim', [0 2^16-1], ...
+    'CRange', [0, 2^16-1], ...
+    'Enable', true);
+% Flips the plate and scales the axes accordingly. 
+plateScale = [sign(0.5 - plate.XReverse), -sign(0.5 - plate.YReverse)];
+% Transforms the image to fit in the field of view. 
+T = spcore.ui.navigator.Image.getTransformation(...
+    'Scale', plateScale .* [FOVPhysicalSizeX FOVPhysicalSizeY], ...
+    'Translate', [FOVStageCoor.X FOVStageCoor.Y]/1000 - ...
+    plateScale .* [FOVPhysicalSizeX/2 FOVPhysicalSizeY/2] ./([FOVPhysicalSizeX FOVPhysicalSizeY]));
+% Adds the custom image onto the plate
+mMono = monoChannel.addImage(...
+    'CData', FOVImage, ...
+    'Transformation', T);
+% Updates the navigator with the image and zooms in on the selected well. 
+n.addChannel('Channel', monoChannel);
+n.CurrentObject = currWell;
+n.zoomFit('selected'); 
+
+%{
+n.CurrentObject = currWell;
+n.zoomFit('selected');
 
     % Creates a channel for a monochromatic image displaying in bue. 
       monoChannel = spcore.ui.navigator.Channel('Name', 'Image', ..._ 
@@ -63,7 +107,7 @@ n = navigator(); n.load(library); % load library to show
     plateScale = [sign(0.5 - plate.XReverse), -sign(0.5 - plate.YReverse)];
     T = spcore.ui.navigator.Image.getTransformation(...
     'Scale', plateScale .* [1, 1], ...
-    'Translate', [FOVStageCoor.X FOVStageCoor.Y]);
+    'Translate', );
 
     % Adds the custom image onto the plate
     mMono = monoChannel.addImage(...
@@ -73,15 +117,18 @@ n = navigator(); n.load(library); % load library to show
     % Updates the navigator. 
     n.addChannel('Channel', monoChannel);
     %n.CurrentObject = w;
-    %n.zoomFit('selected'); % Zooms onto plate with the image.
+    %n.zoomFit('selected'); % Zooms onto plate with the image.%} 
 %{ 
 2. from the data, this FOV has a stage coordinate (center of FOV) as in
 'FOVStageCoor'. Can you figure out which well does this FOV belong to? if
 so, can you generate the right well and FOV, and place the image there?
-3. chanllenging question: can you rotate the FOV? (this requires reading
-the actual code of planner's addFOV method and chase down the chain to see
-if you can tilt the FOV in any way. )
 
-%}
+% Step 1: Generate all well
+% Step 2: compare the FOVStageCoor to see if it's in the center of the
+other wells
+    % For loop that iterates through all of the wells and uses an if
+    statement to see if it is in the center 
+%} 
+%} 
 
 

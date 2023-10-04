@@ -1,21 +1,51 @@
 % Arunima Jaiswal 
 % 9/20/23 Training Project 
-
 % Creates a function to display a custom image in the Navigator. 
-function NavigatorImageDisp(xpos, ypos)
+function NavigatorImageDisp(~, ~, ~, ~)
+    xpos = 0; 
+    ypos = 0;  
+    xsize = 0.5;  
+    ysize = 0.5; 
+    
     % Creates a new navigator with 24 plates. 
-    n = navigator();
-    n.DarkMode = false;
-    plate = spcore.Plate.getDefault('PlateType', 'P24-1.5H-N'); 
-    n.new(plate); 
+    protocol = spcore.Protocol('Name', 'Test experiment', ...
+    'Path', 'D:\');
+    plate = spcore.Plate.getDefault('PlateType', 'P24-1.5H-N');     
+    protocol.setPlate(plate);
+    lib = spcore.Library('Protocol', protocol);
+    p = spcore.hardware.Planner(lib);
+    g = p.addGroup();
+
+    
+    protocol = spcore.Protocol('Name', 'Image Disp Test', ...
+    'Path', 'D:\');
+    lib = spcore.Library('Protocol', protocol); 
+    p = spcore.hardware.Planner(lib); 
+    g = p.addGroup();
+    disp(lib.Count) 
+    % Set wells
+    p.addWell('Group', 1, ...
+              'Plate', 1, ...
+              'WellName', 'A1-D8', ...
+              'Name', 'test');
+    % Set FOV
+    p.addTiledFOV('Well', lib.getChildren('well'), ...
+                  'RowCount', 4, ...
+                  'ColumnCount', 3, ...
+                  'XPhysicalSize', xsize, ...
+                  'YPhysicalSize', ysize, ...
+                  'ColumnSeparation', 1, ...
+                  'RowSeparation', 1);
+    % simulated view
+    fg = FOVGenerator('Plate', plate, ...
+                      'XPhysicalSize', xsize, ...
+                      'YPhysicalSize', ysize, ...
+                      'Resolution', 0.32, ...
+                      'Density', 1000);
+    
     % Provides the image info for the sample image. 
-    imgarray = imfinfo('forest.tif'); 
+    imgarray = imfinfo('mri.tif'); 
     disp(imgarray(1)) 
-    % Asks the user for which well they'd like ot use to display their
-    % image, and displays it in that well accordingly. 
-    wellprompt = "Which well (1-24) would you like to display your image in?"; 
-    wellnumber = input(wellprompt); 
-    w = n.RootObject.getChildren('w', wellnumber); 
     % Creates a channel for a monochromatic image displaying in white. 
     monoChannel = spcore.ui.navigator.Channel('Name', 'Image', ..._ 
         'Color', 'white', ...
@@ -23,14 +53,6 @@ function NavigatorImageDisp(xpos, ypos)
         'CRange', [0, 255]); 
     % Scales the plate and transforms the image to fit properly. 
     plateScale = [sign(0.5 - plate.XReverse), -sign(0.5 - plate.YReverse)];
-    % Scales the image to fit in the well according to their given width
-    % and height of the image. 
-    xscaleprompt = "What is the width of your image?"; 
-    xscale = input(xscaleprompt); 
-    yscaleprompt = "What is the height of your image?"; 
-    yscale = input(yscaleprompt); 
-    yscale = 2432 / (sqrt((0.5*xscale^2)+(0.5*yscale^2)));   
-    xscale = yscale;  
     % Vertically and horizontally moves the image according to its position
     % in the well. 
     xpos = w.XPosition - xpos; 
@@ -46,5 +68,6 @@ function NavigatorImageDisp(xpos, ypos)
     % Updates the navigator. 
     n.addChannel('Channel', monoChannel);
     n.CurrentObject = w;
-    n.zoomFit('selected'); % Zooms onto plate with the image. 
+    n.zoomFit('selected'); % Zooms onto plate with the image.
+    
 
