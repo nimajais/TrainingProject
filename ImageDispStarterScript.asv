@@ -1,4 +1,4 @@
-%% Arunima's starting script
+ZAX%% Arunima's starting script
 %% load data
 %FOVData = load('\\10.21.17.86\s\Images\Haixin\SPOTLight\20230922\CLM\FOVData.mat');
 %CalibrationInfo = load('\\10.21.17.86\s\Images\Haixin\SPOTLight\20230922\CLM\CalibrationInfo.mat');
@@ -7,9 +7,9 @@ CalibrationInfo = load('/Users/nima/Desktop/Baylor Data/CalibrationInfo.mat');
 %% 
 iImage = 2;
 FOVImage = FOVData.FOVImage{iImage};
-figure;
-imagesc(FOVImage);
-title('Take a look the image of this FOV')
+%figure;
+%imagesc(FOVImage);
+%title('Take a look the image of this FOV')
 %% 
 [FOVPixelSizeY, FOVPixelSizeX] = size(FOVImage); 
 FOVPhysicalSizeX = FOVPixelSizeX* CalibrationInfo.Resolution/1000; % CalibrationInfo.Resolution is um/pixel, physical size is in mm as defined in plate
@@ -36,25 +36,10 @@ group = planner.addGroup();
 
 disp('Finished initialize protocol and plate');
 %% Create all of the wells in a 24 well plate. 
-wellName = {'A1-D6'};
+wellName = {'D6'};
 planner.addWell('Group', 1, ...
     'Plate', plateID, ...
     'WellName', wellName);
-groupNames = ["Control", "Test"];
-wells = {[1, 1; 1, 2; 1, 3; 1, 4], [2, 1; 2, 2; 2, 3; 2, 4]};
-plate = spcore.Plate.getDefault('PlateType', 'P24-1.5H-N');
-for i = 1:numel(groupNames)
-    g = spcore.Group('Name', groupNames(i), ...
-        'Parent', lib);
-    for j = 1:height(wells{i})
-        wellName = spcore.Plate.rc2wellname(wells{i}(j, 1), wells{i}(j, 2));
-        spcore.Well('Name', groupNames(i) + " Well " + string(j), ...
-            'Parent', g, ...
-            'Plate', plate, ...
-            'WellName', wellName);
-    end
-end
-
 currWell = planner.getWell('WellName', wellName, 'Plate', plateID);
 planner.addFOV('Well', currWell, ...
     'XRelativePosition', 0, ...
@@ -63,6 +48,81 @@ planner.addFOV('Well', currWell, ...
     'YPhysicalSize', FOVPhysicalSizeY);
 % FOV added to the center
 n = navigator(); n.load(library); % load library to show
+
+% Code under construction for task 2. 
+% Approach 1: Define and add 24 wells. 
+wellName = {'A1-D6'};
+planner.addWell('Group', 1, ...
+    'Plate', plateID, ...
+    'WellName', wellName)
+currWell = planner.getWell('WellName', wellName, 'Plate', plateID);
+% Create vectors with all of the x- and y- positions for the centers of the 
+% wells. Search if the x- and y-coords of the FOV are located in any of
+% these centers. 
+wellXCenter = [currWell.XPosition];
+FOVXCenter = FOVStageCoor.X / 1000; 
+wellYCenter = [currWell.YPosition]; 
+FOVYCenter = FOVStageCoor.Y / 1000; 
+for i = 1:numel(wellXCenter) 
+    FOVXWell = find(wellXCenter == FOVXCenter);
+    FOVYWell = find(wellYCenter == FOVYCenter); 
+    FOVWell = intersect(FOVXWell, FOVYWell); 
+end 
+
+% Converts the numerical well into row and column indices. 
+if FOVWell <=6
+   r = 1; 
+   c = FOVWell; 
+elseif FOV <= 12
+   r = 2; 
+   c = FOVWell - 6; 
+elseif FOV <= 18
+   r = 3; 
+   c = FOVWell - 12; 
+else 
+   r = 4; 
+   c = FOVWell - 18; 
+end 
+
+% Convert numerical index of well into well name using rc2wellname (spcore.Plate)
+wellName = well.rc2wellname(r, c); 
+
+% Adds well to navigator. 
+currWell = planner.getWell('WellName', wellName, 'Plate', plateID);
+planner.addFOV('Well', currWell, ...
+    'XRelativePosition', 0, ...
+    'YRelativePosition', 0, ...
+    'XPhysicalSize', FOVPhysicalSizeX, ...
+    'YPhysicalSize', FOVPhysicalSizeY);
+
+
+% Approach 2: Define wells manually as shown in documentation.  
+% groupNames = ["A", "B", "C", "D"];
+% wells = {[1, 1; 1, 2; 1, 3; 1, 4; 1, 5; 1, 6], ...
+% [2, 1; 2, 2; 2, 3; 2, 4; 2, 5; 2, 6], [3, 1; 3, 2; 3, 3; 3, 4; 3, 5; 3, 6] ...
+% [4, 1; 4, 2; 4, 3; 4, 4; 4, 5; 4, 6]};
+% for i = 1:numel(groupNames)
+%    g = spcore.Group('Name', groupNames(i), ...
+%        'Parent', library);
+%    for j = 1:height(wells{i})
+%        wellName = spcore.Plate.rc2wellname(wells{i}(j, 1), wells{i}(j, 2));
+%        spcore.Well('Name', groupNames(i) + " Well " + string(j), ...
+%            'Parent', g, ...
+%            'Plate', plate, ...
+%            'WellName', wellName);
+%        currWell = planner.getWell('WellName', wellName, 'Plate', plateID); 
+%        wellCenter = [currWell.XPosition, currWell.YPosition];
+%        if isequal(wellCenter, FOVStageCoor)
+%            planner.addFOV('Well', currWell, ...
+%            'XRelativePosition', 0, ...
+%            'YRelativePosition', 0, ...
+%            'XPhysicalSize', FOVPhysicalSizeX, ...
+%            'YPhysicalSize', FOVPhysicalSizeY);
+%        end 
+%    end
+% end
+% n = navigator(); n.load(library); % load library to show
+%} 
 %% Task for Arunima:
 
 
