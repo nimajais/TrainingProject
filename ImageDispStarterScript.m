@@ -33,7 +33,6 @@ protocol.setPlate(plate);
 library = spcore.Library('Protocol', protocol);
 planner = spcore.hardware.Planner(library);
 group = planner.addGroup();
-
 disp('Finished initialize protocol and plate');
 %% Create all of the wells in a 24 well plate.
 %2. From the data, this FOV has a stage coordinate (center of FOV) as in
@@ -70,7 +69,7 @@ monoChannel = spcore.ui.navigator.Channel('Name', 'Image', ...
 plateScale = [sign(0.5 - plate.XReverse), -sign(0.5 - plate.YReverse)];
 % Transforms the image to fit in the field of view. 
 T = spcore.ui.navigator.Image.getTransformation(...
-    'Rotate', 0, ... 
+    'Rotate', 0.78, ... 
     'Scale', plateScale .* [FOVPhysicalSizeX FOVPhysicalSizeY], ...
     'Translate', [FOVStageCoor.X FOVStageCoor.Y]/1000 - ...
     plateScale .* [FOVPhysicalSizeX/2 FOVPhysicalSizeY/2] ./([FOVPhysicalSizeX FOVPhysicalSizeY]));
@@ -86,3 +85,6 @@ n.zoomFit('selected');
 % 3. challenging question: can you rotate the FOV? (this requires reading
 % the actual code of planner's addFOV method and chase down the chain to see
 % if you can tilt the FOV in any way.) 
+% Using the 'Rotate' command in the transformation rotates the image.
+% In this case, an arbitrary rotation of 0.78 (45 degrees) was used. 
+% However, the FOV is not rotated, which will be tackled later. 
