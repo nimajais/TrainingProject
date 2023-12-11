@@ -31,6 +31,9 @@ M = T_fovData.SatuMask{1};
 I = fov(1).Frame{'C', 2, 'T', '@(x) x(1)'}.getPixel();
 spcore.image.bglevel(spcore.array.nanmasking(I, ~M), 16)
 
-%%
-I = fov(1).Frame{'C', 2, 'T', 2}.getPixel();
+%% check FOVs
+fov = lib.getChildren('fov');
+
+I = fov(1).Frame{'C', 1, 'T', '@(x) x(1)'}.getPixel();
 figure; imshow(I, []);
+
